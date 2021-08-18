@@ -8,7 +8,7 @@ class AMConf {
   //配置文件
   static final String localConf = Directory.current.path + '/flow.conf';
 
-  //读取配置文件
+  //配置文件检测
   static Future<bool> readConf() async {
     //先判断文件是否存在
     var exist = await File(localConf).exists();
@@ -63,4 +63,7 @@ class AMConf {
       return false;
     }
   }
+
+  // SVN密码校验检测
+
 }

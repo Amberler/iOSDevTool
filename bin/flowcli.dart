@@ -5,49 +5,36 @@ import 'package:flowcli/util/AMTool.dart';
 import 'package:process_run/shell.dart';
 
 void main(List<String> arguments) {
-  // print('Hello world: ${flowcli.calculate()}!');
-  //
-  // var doc = loadYaml("YAML: YAML Ain't Markup Language");
-  // print(doc['YAML']);
-  // // print(AMUtil.config());
-  // // print(AMUtil.path);
-  // testcli();
-
-  // AMConf.readConf().then((init) {
-  //   if (init) {
-  //     // 读取到配置
-  //     print('已配置，验证网络');
-  //     AMTool.log('已配置，验证网络');
-  //   } else {
-  //     // 请先配置文件
-  //     AMTool.log('请先配置文件', logLevel: AMLogLevel.AMLogError);
-  //   }
-  // });
-  //
-  AMConf.checkServer().then((isOnline) {
-    if (isOnline) {
-      // 网络校验成功，检查配置
-      print('网络校验成功');
-      AMConf.readConf().then((hasConf) {
-        if (hasConf) {
-          // 配置校验成功，准备处理获取的组件
-          print('配置校验成功，检查参数');
-        } else {
-          // 生成配置文件，并退出程序
-          var init = AMConf.createConf();
-          if (init) {
-            AMTool.log('初始化成功，请打开flow.conf填写配置参数',
-                logLevel: AMLogLevel.AMLogWarn);
-          } else {
-            AMTool.log('初始化失败，请确认是否添加执行权限', logLevel: AMLogLevel.AMLogError);
-          }
-        }
-        exit(0);
-      });
-    } else {
-      AMTool.log('网络校验失败，请检查是否是内网', logLevel: AMLogLevel.AMLogError);
-      exit(0);
+  /// 检查环境
+  checkEnvironment().then((res) {
+    if (res == true) {
+      // 环境配置成功
+      AMTool.log('环境检测通过');
     }
+    exit(0);
+  });
+}
+
+Future<bool> checkEnvironment() {
+  return Future.wait([AMConf.checkServer(), AMConf.readConf()]).then((res) {
+    if (res[0] == true && res[1] == true) {
+      return true;
+    }
+
+    AMTool.log('环境检测未通过', logLevel: AMLogLevel.AMLogError);
+
+    if (res[0] == false) {
+      AMTool.log('请检查是否连接公司内网', logLevel: AMLogLevel.AMLogError);
+    }
+
+    if (res[1] == false) {
+      AMConf.createConf();
+      AMTool.log('首次初始化成功，请先配置flow.conf');
+    }
+    return false;
+  }).catchError((e) {
+    AMTool.log('环境检测未通过', logLevel: AMLogLevel.AMLogError);
+    return false;
   });
 }
 
