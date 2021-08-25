@@ -8,7 +8,7 @@ class AMSVNManager {
   //执行shell命令工具
   static final _shellTool = Shell(verbose: true);
 
-  //SVM模块数据
+  //SVN模块数据
   static late final List<String> modules;
 
   //通用运行命令方法
