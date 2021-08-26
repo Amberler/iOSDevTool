@@ -17,7 +17,8 @@ void main(List<String> arguments) {
           AMTool.currentDay();
 
           var args = ['log', '--search', '2021-08-26'];
-          AMSVNManager.getModuleLatestLog(args, 'C_OS_HCPBusiniessComponent')
+          AMSVNManager.getModuleLatestLog(
+                  '2021-08-26', 'C_OS_HCPBusiniessComponent')
               .then((value) {
             if (value == true) {
               AMTool.log('修改记录校验成功');

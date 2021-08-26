@@ -12,19 +12,11 @@ class AMSVNManager {
   static late final List<String> modules;
 
   //通用运行命令方法
-  static Future runCommand(List<String> args, {String? module}) async {
-    var url;
-    if (module != null) {
-      url = AMConf.conf.svnURL + '/' + module;
-    } else {
-      url = AMConf.conf.svnURL;
-    }
-
+  static Future runCommand(List<String> args) async {
     var arguments = <String>[
       ...args,
       '--trust-server-cert',
       '--non-interactive',
-      url,
       '--username',
       AMConf.conf.oaName,
       '--password',
@@ -41,7 +33,7 @@ class AMSVNManager {
 
   //校验OA密码并获取svn仓库模块
   static Future<bool> checkOAAndGetModules() {
-    var args = <String>['list'];
+    var args = <String>['list', AMConf.conf.svnURL];
     // SVN校验
     try {
       return runCommand(args).then((value) {
@@ -69,17 +61,19 @@ class AMSVNManager {
 
   //获取指定仓库最近一次提交记录
   static Future<bool> getModuleLatestLog(
-      List<String> args, String moduleName) async {
-    return await runCommand(args, module: moduleName).then((value) {
+      String currentDay, String moduleName) async {
+    var url = AMConf.conf.svnURL + '/' + moduleName;
+    var args = ['log', '--search', currentDay, url];
+    return await runCommand(args).then((value) {
       if (value is ProcessResult) {
         // 正常执行
-        var date = args.last;
+        var date = args[2];
         String logs = value.stdout;
         // 如果日志为空，返回校验失败
         if (!logs.contains(date)) {
           return false;
         }
-        // 如果日志不为空，处理日志
+        // 如果日志不为空，处理日志(这里的-------个数是72个，svn日志输出就是这样，修改的话，可能会导致截取不正常，)
         var logArr = logs.split(
             '------------------------------------------------------------------------\n');
         var resArr = [];
@@ -102,5 +96,10 @@ class AMSVNManager {
         return false;
       }
     });
+  }
+
+  //SVN打tag
+  static void createTag(String moduleName) {
+    var args = ['cp', '--search', '--pin-externals'];
   }
 }
