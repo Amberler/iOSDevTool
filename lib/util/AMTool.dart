@@ -1,3 +1,5 @@
+import 'package:date_format/date_format.dart';
+
 /// 工具类
 enum AMLogLevel {
   //绿色打印
@@ -23,5 +25,10 @@ class AMTool {
         print('\x1B[31m$msg\x1B[0m');
         break;
     }
+  }
+
+  // 获取当天日期
+  static String currentDay() {
+    return formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd]);
   }
 }

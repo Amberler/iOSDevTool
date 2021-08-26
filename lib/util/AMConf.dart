@@ -3,6 +3,14 @@ import 'dart:io';
 
 import 'package:yaml/yaml.dart';
 
+class AMConfig {
+  String oaName;
+  String oaPasswd;
+  String svnURL;
+  String gitLocalPath;
+  AMConfig(this.oaName, this.oaPasswd, this.svnURL, this.gitLocalPath);
+}
+
 class AMConf {
   //程序执行目录
   static final String executePath = Directory.current.path;
@@ -11,7 +19,7 @@ class AMConf {
   static final String localConf = Directory.current.path + '/flow.conf';
 
   //配置文件
-  static late final YamlMap conf;
+  static late final AMConfig conf;
 
   //配置文件检测
   static Future<bool> readConf() async {
@@ -27,7 +35,9 @@ class AMConf {
   //解析配置文件
   static Future<bool> analysisConf() async {
     return await File(localConf).readAsString().then((confStr) {
-      conf = loadYamlDocument(confStr).contents.value as YamlMap;
+      var config = loadYamlDocument(confStr).contents.value as YamlMap;
+      conf = AMConfig(config['OA']['name'], config['OA']['passwd'],
+          config['SVN']['SVNModuleURL'], config['Git']['PodspecPath']);
       return true;
     }).catchError((e) {
       return false;
