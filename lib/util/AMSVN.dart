@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flowcli/util/AMTool.dart';
 import 'package:process_run/shell.dart';
 
 import 'AMConf.dart';
@@ -98,8 +99,101 @@ class AMSVNManager {
     });
   }
 
+  //获取模块上一次的tag记录
+  static Future<String?> getModuleLatestTag(String moduleName) async {
+    var url = AMConf.conf.svnURL + '/' + moduleName + '/tags';
+    var args = [
+      'list',
+      url,
+    ];
+    return await runCommand(args).then((value) {
+      if (value is ProcessResult) {
+        var temRes = value.stdout as String;
+        var res = temRes.replaceAll('/\n', ',');
+        var temList = res.split(',');
+        if (temList.contains('removeme.txt')) {
+          temList.remove('removeme.txt');
+        }
+        print(temList.length);
+        var latestTag;
+        for (var i = temList.length - 1; i >= 0; i--) {
+          var temItem = temList[i];
+          var temTag = temItem.replaceAll('.', '');
+          if (AMTool.isNumber(temTag)) {
+            latestTag = temItem;
+            break;
+          }
+        }
+        return latestTag;
+      } else if (value is ShellException) {
+        // 异常处理
+        print('异常处理：${value.result?.stderr}');
+        return null;
+      } else {
+        return null;
+      }
+    });
+  }
+
+  static Future<String> generateModuleNewTag(String moduleName) async {
+    return await getModuleLatestTag(moduleName).then((lastTag) {
+      if (lastTag != null) {
+        //版本号新增
+
+        var str = '1.99.99qwe';
+
+        var tagArr = str.split('.');
+        var lastStr = tagArr.last;
+        var number = AMTool.isNumber(lastStr);
+        if (lastStr.length >= 4 && number == true) {
+          //时间戳版本号
+          tagArr.removeLast();
+          tagArr.last = AMTool.currentTimestamp();
+        } else {
+          //非时间戳版本号
+          var versionParse = true;
+          for (var i = tagArr.length - 1; i >= 0; i--) {
+            var item = int.tryParse(tagArr[i]);
+            if (item != null) {
+              //版本号解析成功，自增
+              if (99 - (item + 1) > 0) {
+                //版本号+1小于99，可以自增
+                tagArr[i] = (item + 1).toString();
+                break;
+              } else {
+                //版本号大于99，
+                tagArr[i] = (0).toString();
+              }
+            } else {
+              //解析失败，分两种处理，版本号最后一位非数字，替换成当前时间戳版本号，不是最后一位非数字，终止程序
+              if (i == tagArr.length - 1) {
+                tagArr[i] = AMTool.currentTimestamp();
+                break;
+              } else {
+                print('版本号解析失败');
+                versionParse = false;
+              }
+            }
+          }
+
+          //获取到处理的版本号
+          if (!versionParse) {
+            print('版本号解析失败');
+          }
+        }
+        print('处理后的版本号：${tagArr.join('.')}');
+        return '';
+      } else {
+        return '';
+      }
+    });
+  }
+
   //SVN打tag
   static void createTag(String moduleName) {
-    var args = ['cp', '--search', '--pin-externals'];
+    var args = [
+      'cp',
+      '--pin-externals',
+    ];
   }
 }

@@ -16,18 +16,28 @@ void main(List<String> arguments) {
 
           AMTool.currentDay();
 
-          var args = ['log', '--search', '2021-08-26'];
-          AMSVNManager.getModuleLatestLog(
-                  '2021-08-26', 'C_OS_HCPBusiniessComponent')
-              .then((value) {
-            if (value == true) {
-              AMTool.log('修改记录校验成功');
+          print(AMTool.currentTimestamp());
+
+          AMSVNManager.generateModuleNewTag('C_OS_OpenSSL').then((value) {
+            if (value.isNotEmpty) {
+              print(value);
             } else {
-              AMTool.log('修改记录校验失败,请检查SVN最近是否有提交',
-                  logLevel: AMLogLevel.AMLogError);
+              print('获取版本号失败');
             }
-            exit(1);
           });
+
+          // var args = ['log', '--search', '2021-08-26'];
+          // AMSVNManager.getModuleLatestLog(
+          //         '2021-08-26', 'C_OS_HCPBusiniessComponent')
+          //     .then((value) {
+          //   if (value == true) {
+          //     AMTool.log('修改记录校验成功');
+          //   } else {
+          //     AMTool.log('修改记录校验失败,请检查SVN最近是否有提交',
+          //         logLevel: AMLogLevel.AMLogError);
+          //   }
+          //   exit(1);
+          // });
 
           // exit(1);
         } else {

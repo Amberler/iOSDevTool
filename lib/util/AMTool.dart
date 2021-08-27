@@ -31,4 +31,15 @@ class AMTool {
   static String currentDay() {
     return formatDate(DateTime.now(), [yyyy, '-', mm, '-', dd]);
   }
+
+  // 格式化当前时间
+  static String currentTimestamp() {
+    return formatDate(DateTime.now(), [yyyy, mm, dd, '.', hh, nn]);
+  }
+
+  // 验证是否为数字
+  static bool isNumber(String str) {
+    final reg = RegExp(r'^[0-9]+.?[0-9]*$');
+    return reg.hasMatch(str);
+  }
 }
