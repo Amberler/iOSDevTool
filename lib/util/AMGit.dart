@@ -41,8 +41,9 @@ class AMGitManager {
   }
 
   //更新仓库
-  static Future<bool> gitPush() async {
-    var cmd = 'git add . \n git push';
+  static Future<bool> gitPush(String moduleName, String version) async {
+    var cmd =
+        "git add . \n git commit -m '[update]$moduleName($version) By flowcli 小助手' \n git push";
     return _shellTool.run(cmd).then((value) {
       print(value);
       return false;

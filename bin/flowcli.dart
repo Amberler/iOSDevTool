@@ -54,7 +54,7 @@ Future<bool> checkEnvironment() {
 /// 检查OA密码和本地Git路径
 Future<bool> checkOAAndLocalGitPath() {
   return Future.wait(
-          [AMSVNManager.checkOAAndGetModules(), AMGitManager.gitPush()])
+          [AMSVNManager.checkOAAndGetModules(), AMGitManager.gitPull()])
       .then((res) {
     if (res[0] == true && res[1] == true) {
       return true;
