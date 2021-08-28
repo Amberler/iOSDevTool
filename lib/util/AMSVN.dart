@@ -5,6 +5,8 @@ import 'package:process_run/shell.dart';
 
 import 'AMConf.dart';
 
+/// SVN相关操作管理类
+
 class AMSVNManager {
   //执行shell命令工具
   static final _shellTool = Shell(verbose: true, commandVerbose: false);
@@ -135,14 +137,12 @@ class AMSVNManager {
     });
   }
 
-  static Future<String> generateModuleNewTag(String moduleName) async {
+  //版本号自增逻辑
+  static Future<String?> generateModuleNewTag(String moduleName) async {
     return await getModuleLatestTag(moduleName).then((lastTag) {
       if (lastTag != null) {
         //版本号新增
-
-        var str = '1.99.99qwe';
-
-        var tagArr = str.split('.');
+        var tagArr = lastTag.split('.');
         var lastStr = tagArr.last;
         var number = AMTool.isNumber(lastStr);
         if (lastStr.length >= 4 && number == true) {
@@ -175,25 +175,95 @@ class AMSVNManager {
               }
             }
           }
-
           //获取到处理的版本号
           if (!versionParse) {
             print('版本号解析失败');
+            return null;
           }
         }
         print('处理后的版本号：${tagArr.join('.')}');
-        return '';
+        return tagArr.join('.');
       } else {
-        return '';
+        return 'null';
       }
     });
   }
 
   //SVN打tag
-  static void createTag(String moduleName) {
+  static Future<bool> createTag(String moduleName, String newVersion) async {
+    var trunkURL = AMConf.conf.svnURL + '/' + moduleName + '/trunk';
+    var targetTagURL =
+        AMConf.conf.svnURL + '/' + moduleName + '/tags/' + newVersion;
+    var commitLog = '$moduleName 更新 $newVersion By flowcli 小助手';
+
     var args = [
       'cp',
       '--pin-externals',
+      trunkURL,
+      targetTagURL,
+      '-m',
+      commitLog
     ];
+    return await runCommand(args).then((value) {
+      if (value is ProcessResult) {
+        if (value.exitCode == 0) {
+          return true;
+        } else {
+          AMTool.log('创建SVN Tag 失败，错误：${value.stdout}');
+          return false;
+        }
+      } else {
+        AMTool.log('创建SVN Tag 失败，请检查SVN $moduleName 仓库');
+        return false;
+      }
+    });
+  }
+
+  //导出Podspec
+  static Future<bool> getModuleOldPodspecAndGenerateNew(
+      String moduleName, String oldVersion, String newVersion) async {
+    var targetTagURL = AMConf.conf.svnURL +
+        '/' +
+        moduleName +
+        '/tags/' +
+        oldVersion +
+        '/$moduleName.podspec';
+    var args = [
+      'cat',
+      targetTagURL,
+    ];
+
+    return await runCommand(args).then((value) {
+      if (value is ProcessResult) {
+        String con = value.stdout;
+        if (con.contains('version')) {
+          var newPodSpec;
+          var podsList = con.split('\n');
+          for (var item in podsList) {
+            var ret = item.contains('s.version');
+            if (ret == true) {
+              print(item);
+              newPodSpec =
+                  con.replaceAll(item, "  s.version          = '$newVersion'");
+              break;
+            }
+          }
+          var filePath = AMConf.conf.gitLocalPath +
+              '/$moduleName/$newVersion/$moduleName.podspec';
+          var file = File(filePath);
+
+          try {
+            file.createSync(recursive: true);
+            file.writeAsStringSync(newPodSpec);
+          } catch (error) {
+            AMTool.log('$filePath 路径创建失败，请检查Git仓库路径是否正确，是否有读写权限',
+                logLevel: AMLogLevel.AMLogError);
+            return false;
+          }
+          return true;
+        }
+      }
+      return false;
+    });
   }
 }

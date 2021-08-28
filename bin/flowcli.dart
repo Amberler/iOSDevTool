@@ -1,54 +1,27 @@
 import 'dart:io';
 
 import 'package:flowcli/util/AMConf.dart';
+import 'package:flowcli/util/AMGit.dart';
 import 'package:flowcli/util/AMSVN.dart';
 import 'package:flowcli/util/AMTool.dart';
 
 void main(List<String> arguments) {
   /// 检查环境
   checkEnvironment().then((res) {
-    if (res == true) {
-      AMTool.log('环境检测通过');
-      // 校验OA密码
-      AMSVNManager.checkOAAndGetModules().then((check) {
-        if (check) {
-          AMTool.log('OA校验成功');
-
-          AMTool.currentDay();
-
-          print(AMTool.currentTimestamp());
-
-          AMSVNManager.generateModuleNewTag('C_OS_OpenSSL').then((value) {
-            if (value.isNotEmpty) {
-              print(value);
-            } else {
-              print('获取版本号失败');
-            }
-          });
-
-          // var args = ['log', '--search', '2021-08-26'];
-          // AMSVNManager.getModuleLatestLog(
-          //         '2021-08-26', 'C_OS_HCPBusiniessComponent')
-          //     .then((value) {
-          //   if (value == true) {
-          //     AMTool.log('修改记录校验成功');
-          //   } else {
-          //     AMTool.log('修改记录校验失败,请检查SVN最近是否有提交',
-          //         logLevel: AMLogLevel.AMLogError);
-          //   }
-          //   exit(1);
-          // });
-
-          // exit(1);
-        } else {
-          AMTool.log('OA密码校验失败，请检查', logLevel: AMLogLevel.AMLogError);
-          exit(0);
-        }
-      });
+    if (res == false) {
+      exit(1);
     }
+    checkOAAndLocalGitPath().then((res) {
+      if (res == false) {
+        exit(2);
+      }
+
+      /// 环境 + OA + Git 校验均通过，开始处理 组件发布流程
+    });
   });
 }
 
+/// 检查开发环境配置
 Future<bool> checkEnvironment() {
   return Future.wait(
           [AMConf.checkServer(), AMConf.readConf(), AMConf.analysisConf()])
@@ -71,14 +44,32 @@ Future<bool> checkEnvironment() {
     if (res[2] == false) {
       AMTool.log('flow.conf配置格式不正确，解析失败', logLevel: AMLogLevel.AMLogError);
     }
-
-    // if (res[3] == false) {
-    //   AMTool.log('OA密码校验失败，请检查', logLevel: AMLogLevel.AMLogError);
-    // }
-
     return false;
   }).catchError((e) {
     AMTool.log('环境检测未通过', logLevel: AMLogLevel.AMLogError);
+    return false;
+  });
+}
+
+/// 检查OA密码和本地Git路径
+Future<bool> checkOAAndLocalGitPath() {
+  return Future.wait(
+          [AMSVNManager.checkOAAndGetModules(), AMGitManager.gitPush()])
+      .then((res) {
+    if (res[0] == true && res[1] == true) {
+      return true;
+    }
+
+    AMTool.log('OA密码校验或者本地Git校验未通过', logLevel: AMLogLevel.AMLogError);
+
+    if (res[0] == false) {
+      AMTool.log('请检查OA用户名和密码是否正确', logLevel: AMLogLevel.AMLogError);
+    }
+
+    if (res[1] == false) {
+      AMTool.log('本地Git仓库pull失败，请检查路径是否正确', logLevel: AMLogLevel.AMLogError);
+    }
+
     return false;
   });
 }
