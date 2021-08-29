@@ -8,8 +8,8 @@ import 'package:process_run/shell.dart';
 class AMGitManager {
   //执行shell命令工具
   static final _shellTool = Shell(
-      verbose: true,
-      commandVerbose: true,
+      verbose: false,
+      commandVerbose: false,
       workingDirectory: AMConf.conf.gitLocalPath);
 
   //通用执行命令工具
@@ -17,7 +17,6 @@ class AMGitManager {
     try {
       return await _shellTool.runExecutableArguments('git', arguments);
     } catch (e) {
-      print(e);
       return e;
     }
   }
@@ -45,7 +44,12 @@ class AMGitManager {
     var cmd =
         "git add . \n git commit -m '[update]$moduleName($version) By flowcli 小助手' \n git push";
     return _shellTool.run(cmd).then((value) {
-      print(value);
+      if (value.length == 3) {
+        var lastRet = value.last;
+        if (lastRet.exitCode == 0) {
+          return true;
+        }
+      }
       return false;
     }).catchError((error) {
       if (error is ShellException) {

@@ -87,7 +87,4 @@ Git:
       return false;
     }
   }
-
-  // SVN密码校验检测
-
 }

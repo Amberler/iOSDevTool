@@ -9,7 +9,7 @@ import 'AMConf.dart';
 
 class AMSVNManager {
   //执行shell命令工具
-  static final _shellTool = Shell(verbose: true, commandVerbose: false);
+  static final _shellTool = Shell(verbose: false, commandVerbose: false);
 
   //SVN模块数据
   static late final List<String> modules;
@@ -29,7 +29,6 @@ class AMSVNManager {
     try {
       return await _shellTool.runExecutableArguments('svn', arguments);
     } catch (e) {
-      print(e);
       return e;
     }
   }
@@ -116,7 +115,6 @@ class AMSVNManager {
         if (temList.contains('removeme.txt')) {
           temList.remove('removeme.txt');
         }
-        print(temList.length);
         var latestTag;
         for (var i = temList.length - 1; i >= 0; i--) {
           var temItem = temList[i];
@@ -156,12 +154,12 @@ class AMSVNManager {
             var item = int.tryParse(tagArr[i]);
             if (item != null) {
               //版本号解析成功，自增
-              if (99 - (item + 1) > 0) {
-                //版本号+1小于99，可以自增
+              if (9 - (item + 1) > 0) {
+                //版本号+9，可以自增
                 tagArr[i] = (item + 1).toString();
                 break;
               } else {
-                //版本号大于99，
+                //版本号大于9，
                 tagArr[i] = (0).toString();
               }
             } else {
@@ -170,21 +168,18 @@ class AMSVNManager {
                 tagArr[i] = AMTool.currentTimestamp();
                 break;
               } else {
-                print('版本号解析失败');
                 versionParse = false;
               }
             }
           }
           //获取到处理的版本号
           if (!versionParse) {
-            print('版本号解析失败');
             return null;
           }
         }
-        print('处理后的版本号：${tagArr.join('.')}');
         return tagArr.join('.');
       } else {
-        return 'null';
+        return null;
       }
     });
   }
@@ -221,12 +216,12 @@ class AMSVNManager {
 
   //导出Podspec
   static Future<bool> getModuleOldPodspecAndGenerateNew(
-      String moduleName, String oldVersion, String newVersion) async {
+      String moduleName, String newVersion) async {
     var targetTagURL = AMConf.conf.svnURL +
         '/' +
         moduleName +
         '/tags/' +
-        oldVersion +
+        newVersion +
         '/$moduleName.podspec';
     var args = [
       'cat',
@@ -242,7 +237,6 @@ class AMSVNManager {
           for (var item in podsList) {
             var ret = item.contains('s.version');
             if (ret == true) {
-              print(item);
               newPodSpec =
                   con.replaceAll(item, "  s.version          = '$newVersion'");
               break;
