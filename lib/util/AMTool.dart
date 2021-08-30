@@ -34,7 +34,7 @@ class AMTool {
 
   // 格式化当前时间
   static String currentTimestamp() {
-    return formatDate(DateTime.now(), [yyyy, mm, dd, '.', hh, nn]);
+    return formatDate(DateTime.now(), [yyyy, mm, dd, '.', HH, nn]);
   }
 
   // 验证是否为数字
