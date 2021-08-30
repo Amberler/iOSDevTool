@@ -75,7 +75,7 @@ class AMSVNManager {
         if (!logs.contains(date)) {
           return false;
         }
-        // 如果日志不为空，处理日志(这里的-------个数是72个，svn日志输出就是这样，修改的话，可能会导致截取不正常，)
+        // 如果日志不为空，处理日志(这里的-------个数是72个，svn日志输出就是这样，修改的话，肯定会导致截取不正常，)
         var logArr = logs.split(
             '------------------------------------------------------------------------\n');
         var resArr = [];
@@ -85,6 +85,7 @@ class AMSVNManager {
           }
         }
         String latestLog = resArr.first;
+        // 判断当天该用户是否提交过代码
         if (latestLog.contains(AMConf.conf.oaName)) {
           return true;
         } else {
