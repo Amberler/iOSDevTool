@@ -21,6 +21,7 @@ class AMConf {
   //配置文件
   static late final AMConfig conf;
 
+
   //配置文件检测
   static Future<bool> readConf() async {
     //先判断文件是否存在

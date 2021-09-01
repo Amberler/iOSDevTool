@@ -1,4 +1,15 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:date_format/date_format.dart';
+import 'package:flowcli/util/AMConf.dart';
+import 'package:flowcli/util/AMVersion.dart';
+import 'package:yaml/yaml.dart';
+
+/// 检测版本更新地址
+var versionURL = 'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/version.txt';
+/// 二进制更新地址
+var binaryURL = 'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli';
 
 /// 工具类
 enum AMLogLevel {
@@ -42,4 +53,45 @@ class AMTool {
     final reg = RegExp(r'^[0-9]+.?[0-9]*$');
     return reg.hasMatch(str);
   }
+
+  // 版本号
+  static final String version = '1.0.1';
+
+  // 检测更新逻辑
+  static Future<bool> checkVersion() async{
+    try {
+      var responseBody;
+      var httpClient = HttpClient();
+      var request =
+          await httpClient.getUrl(Uri.parse(versionURL));
+      var response = await request.close();
+      if (response.statusCode == HttpStatus.ok) {
+        responseBody = await response.transform(utf8.decoder).join();
+        var config = loadYamlDocument(responseBody).contents.value as YamlMap;
+        var currentVersion = AMVersion(version);
+        var serverVersion = AMVersion(config['version']);
+        var ret = currentVersion.compareTo(serverVersion);
+        if (ret == 1)return true;
+        return false;
+      } else {
+        return false;
+      }
+    } on Exception {
+      return false;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  // 下载程序 覆盖当前二进制
+  static Future<bool> downloadBinary() async{
+    var filePath = '${AMConf.executePath}/flowcli';
+    var httpClient = HttpClient();
+    var request =
+    await httpClient.getUrl(Uri.parse(binaryURL));
+    var response = await request.close();
+    response.con
+  }
+
+
 }
