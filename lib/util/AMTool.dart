@@ -60,10 +60,10 @@ class AMTool {
   }
 
   // 版本号
-  static final String version = '1.0.1';
+  static final String version = '1.0.0';
 
   // 检测更新逻辑
-  static Future<bool> checkVersion() async {
+  static Future<Map> checkVersion() async {
     try {
       var responseBody;
       var httpClient = HttpClient();
@@ -75,15 +75,15 @@ class AMTool {
         var currentVersion = AMVersion(version);
         var serverVersion = AMVersion(config['version']);
         var ret = currentVersion.compareTo(serverVersion);
-        if (ret == 1) return true;
-        return false;
+        if (ret == 1) return {'new': true, 'version': serverVersion.version};
+        return {'new': false, 'version': serverVersion.version};
       } else {
-        return false;
+        return {'new': false, 'version': ''};
       }
     } on Exception {
-      return false;
+      return {'new': false, 'version': ''};
     } catch (_) {
-      return false;
+      return {'new': false, 'version': ''};
     }
   }
 

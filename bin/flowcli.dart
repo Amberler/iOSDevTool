@@ -5,7 +5,7 @@ import 'package:flowcli/util/AMGit.dart';
 import 'package:flowcli/util/AMSVN.dart';
 import 'package:flowcli/util/AMTool.dart';
 
-void main(List<String> arguments) {
+void main(List<String> arguments) async {
   AMTool.log('''
 ###############################################################
                                                 
@@ -19,8 +19,16 @@ void main(List<String> arguments) {
 ###############################################################
   ''');
 
+  /// 检测版本号
+  await AMTool.checkVersion().then((map) {
+    if (map['new']) {
+      AMTool.log(
+          '发现新版本：${map['version']}\nhttps://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli\n下载替换当前二进制文件\n');
+    }
+  });
+
   /// 检查环境
-  checkEnvironment().then((res) {
+  await checkEnvironment().then((res) {
     if (res == false) {
       exit(1);
     }
