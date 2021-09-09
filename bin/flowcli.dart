@@ -57,10 +57,9 @@ void main(List<String> arguments) {
 
       /// 处理用户输入的字符串
       var modules = handleInputModules(inputModules);
-
-      for (var moduleName in modules) {
-        AMTool.log('开始处理$moduleName了');
-
+      for (var i = 0; i <= modules.length; i++) {
+        var moduleName = modules[i];
+        AMTool.log('\n开始处理$moduleName了', logLevel: AMLogLevel.AMLogWarn);
         // 检查现有仓库是否包含该组件
         if (AMSVNManager.modules.contains(moduleName) == false) {
           AMTool.log('现有仓库不包含$moduleName,如果是首次提交，请手动创建',
@@ -68,10 +67,70 @@ void main(List<String> arguments) {
           return;
         }
         // 检查最近提交记录是否匹配
-        checkSVNCommitLog(moduleName);
+        // 获取到组件名，SVN校验提交记录
+        await AMSVNManager.getModuleLatestLog(AMTool.currentDay(), moduleName)
+            .then((res) {
+          if (res == false) {
+            // SVN最近提交记录校验失败，退出程序
+            AMTool.log('未查询到当天的提交记录，请先到SVN提交代码再尝试发布组件',
+                logLevel: AMLogLevel.AMLogError);
+            exit(4);
+          }
+          AMTool.log('$moduleName 当天提交记录匹配成功');
+        });
 
-        // 延迟2s,处理下一个
-        sleep(Duration(seconds: 2));
+        var newLatesVersion = '';
+        //根据旧的版本号，生成新的版本号，并打Tag
+        await AMSVNManager.generateModuleNewTag(moduleName).then((newVersion) {
+          // 判断生成新的版本是否成
+          if (newVersion == null) {
+            AMTool.log('$moduleName 历史版本号解析失败，请尝试指定版本好发布',
+                logLevel: AMLogLevel.AMLogError);
+            exit(5);
+          }
+          newLatesVersion = newVersion;
+        });
+
+        // 获取到新的版本号，SVN 打 Tag
+        await AMSVNManager.createTag(moduleName, newLatesVersion).then((ret) {
+          if (ret == false) {
+            AMTool.log('$moduleName 打Tag失败，请尝试指定版本好发布',
+                logLevel: AMLogLevel.AMLogError);
+            exit(6);
+          } else {
+            AMTool.log('$moduleName 生成新的版本成功');
+          }
+        });
+
+        // // 下载PodSpec,修改版本号，并创建新的PodSpec文件
+        await AMSVNManager.getModuleOldPodspecAndGenerateNew(
+                moduleName, newLatesVersion)
+            .then((ret) {
+          if (ret == false) {
+            AMTool.log('$moduleName 生成新版本PodSpec失败',
+                logLevel: AMLogLevel.AMLogError);
+            exit(6);
+          }
+          AMTool.log('$moduleName 生成新的Podspec成功');
+        });
+
+        // Git 提交新的PodSpec
+        await AMGitManager.gitPush(moduleName, newLatesVersion).then((ret) {
+          if (ret == true) {
+            AMTool.log('$moduleName 发布成功~~');
+            if (i == modules.length - 1) {
+              AMTool.log('\n所有组件处理完~~');
+              exit(0);
+            } else {
+              // 延迟2s,处理下一个
+              sleep(Duration(seconds: 2));
+            }
+          } else {
+            AMTool.log('$moduleName Git推送失败，请手动提交试试',
+                logLevel: AMLogLevel.AMLogError);
+            exit(7);
+          }
+        });
       }
     });
   });
@@ -141,73 +200,4 @@ List<String> handleInputModules(String inputModules) {
     modules.add(inputModules);
   }
   return modules;
-}
-
-/// 检查最近提交记录是否匹配
-void checkSVNCommitLog(String moduleName) {
-  // 获取到组件名，SVN校验提交记录
-  AMSVNManager.getModuleLatestLog(AMTool.currentDay(), moduleName).then((res) {
-    if (res == false) {
-      // SVN最近提交记录校验失败，退出程序
-      AMTool.log('未查询到当天的提交记录，请先到SVN提交代码再尝试发布组件',
-          logLevel: AMLogLevel.AMLogError);
-      exit(4);
-    }
-    AMTool.log('$moduleName 当天提交记录匹配成功');
-    //根据旧的版本号，生成新的版本号，并打Tag
-    generateModuleNewTag(moduleName);
-  });
-}
-
-/// 生成组件新的版本号
-void generateModuleNewTag(String moduleName) {
-  // SVN 记录校验通过，处理版本号问题
-  AMSVNManager.generateModuleNewTag(moduleName).then((newVersion) {
-    // 判断生成新的版本是否成
-    if (newVersion == null) {
-      AMTool.log('$moduleName 历史版本号解析失败，请尝试指定版本好发布',
-          logLevel: AMLogLevel.AMLogError);
-      exit(5);
-    }
-    // 获取到新的版本号，SVN 打 Tag
-    AMSVNManager.createTag(moduleName, newVersion).then((ret) {
-      if (ret == false) {
-        AMTool.log('$moduleName 打Tag失败，请尝试指定版本好发布',
-            logLevel: AMLogLevel.AMLogError);
-        exit(6);
-      } else {
-        AMTool.log('$moduleName 生成新的版本成功');
-        // 打Tag成功，获取组件的Podspec，修改版本号
-        getPodspecAndGenerateNew(moduleName, newVersion);
-      }
-    });
-  });
-}
-
-/// 下载PodSpec,修改版本号，并创建新的PodSpec文件
-void getPodspecAndGenerateNew(String moduleName, String newVersion) {
-  AMSVNManager.getModuleOldPodspecAndGenerateNew(moduleName, newVersion)
-      .then((ret) {
-    if (ret == false) {
-      AMTool.log('$moduleName 生成新版本PodSpec失败', logLevel: AMLogLevel.AMLogError);
-      exit(6);
-    }
-    AMTool.log('$moduleName 生成新的Podspec成功');
-    // Git 提交新的PodSpec
-    gitPushNew(moduleName, newVersion);
-  });
-}
-
-/// Git 提交新的版本 组件
-void gitPushNew(String moduleName, String newVersion) {
-  AMGitManager.gitPush(moduleName, newVersion).then((ret) {
-    if (ret == true) {
-      AMTool.log('$moduleName 发布成功~~');
-      exit(0);
-    } else {
-      AMTool.log('$moduleName Git推送失败，请手动提交试试',
-          logLevel: AMLogLevel.AMLogError);
-      exit(7);
-    }
-  });
 }
