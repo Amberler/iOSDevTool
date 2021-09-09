@@ -5,7 +5,7 @@ import 'package:flowcli/util/AMGit.dart';
 import 'package:flowcli/util/AMSVN.dart';
 import 'package:flowcli/util/AMTool.dart';
 
-void main(List<String> arguments) async {
+void main(List<String> arguments) {
   AMTool.log('''
 ###############################################################
                                                 
@@ -19,23 +19,26 @@ void main(List<String> arguments) async {
 ###############################################################
   ''');
 
-  /// 检测版本号
-  await AMTool.checkVersion().then((map) {
-    if (map['new']) {
-      AMTool.log(
-          '发现新版本：${map['version']}\nhttps://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli\n下载替换当前二进制文件\n');
-    }
-  });
-
   /// 检查环境
-  await checkEnvironment().then((res) {
+  checkEnvironment().then((res) {
     if (res == false) {
       exit(1);
     }
-    checkOAAndLocalGitPath().then((res) {
+    checkOAAndLocalGitPath().then((res) async {
       if (res == false) {
         exit(2);
       }
+
+      if (AMConf.conf.checkVersion) {
+        /// 检测版本号
+        await AMTool.checkVersion().then((map) {
+          if (map['new']) {
+            AMTool.log(
+                '发现新版本：${map['version']}\nhttps://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli\n下载替换当前二进制文件\n');
+          }
+        });
+      }
+
       AMTool.log('环境检测通过,配置信息正确~~');
 
       /// 环境 + OA + Git 校验均通过，开始处理 组件发布流程

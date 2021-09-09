@@ -8,7 +8,9 @@ class AMConfig {
   String oaPasswd;
   String svnURL;
   String gitLocalPath;
-  AMConfig(this.oaName, this.oaPasswd, this.svnURL, this.gitLocalPath);
+  bool checkVersion;
+  AMConfig(this.oaName, this.oaPasswd, this.svnURL, this.gitLocalPath,
+      this.checkVersion);
 }
 
 class AMConf {
@@ -20,7 +22,6 @@ class AMConf {
 
   //配置文件
   static late final AMConfig conf;
-
 
   //配置文件检测
   static Future<bool> readConf() async {
@@ -37,8 +38,16 @@ class AMConf {
   static Future<bool> analysisConf() async {
     return await File(localConf).readAsString().then((confStr) {
       var config = loadYamlDocument(confStr).contents.value as YamlMap;
-      conf = AMConfig(config['OA']['name'], config['OA']['passwd'],
-          config['SVN']['SVNModuleURL'], config['Git']['PodspecPath']);
+      var checkVersion = false;
+      if (config.containsKey('CheckVersion')) {
+        checkVersion = config['CheckVersion'];
+      }
+      conf = AMConfig(
+          config['OA']['name'],
+          config['OA']['passwd'],
+          config['SVN']['SVNModuleURL'],
+          config['Git']['PodspecPath'],
+          checkVersion);
       return true;
     }).catchError((e) {
       return false;
@@ -59,6 +68,8 @@ SVN:
 
 Git: 
   PodspecPath: '/User/cxd/Dev/' #组件源码仓库本地路径，必须是Git克隆下的路径，不然没办法自动上传
+ 
+CheckVersion: false
    ''';
     var confFile = File(localConf);
     confFile.openWrite();
