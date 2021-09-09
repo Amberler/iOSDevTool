@@ -9,29 +9,29 @@ class AMVersion implements Comparable<AMVersion> {
     var list = version.split('.');
     var otherList = other.version.split('.');
     var ret = 0;
-    for (var i = 0; i < list.length; i ++){
+    for (var i = 0; i < list.length; i++) {
       var item = int.tryParse(list[i]);
       var otherItem = int.tryParse(otherList[i]);
-      if (item == null){
+      if (item == null) {
         //前者解析失败，比后者小
         ret = -1;
         break;
       }
 
-      if (otherItem == null){
+      if (otherItem == null) {
         //后者解析失败，比前者小
         ret = 1;
         break;
       }
 
-      if(item == otherItem){
+      if (item == otherItem) {
         //相等遍历下一位
         continue;
-      }else{
+      } else {
         ret = item > otherItem ? 1 : -1;
+        break;
       }
     }
     return ret;
   }
-
 }

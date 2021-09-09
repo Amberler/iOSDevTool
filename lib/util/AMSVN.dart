@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flowcli/util/AMTool.dart';
+import 'package:flowcli/util/AMVersion.dart';
 import 'package:process_run/shell.dart';
 
 import 'AMConf.dart';
@@ -113,19 +114,21 @@ class AMSVNManager {
         var temRes = value.stdout as String;
         var res = temRes.replaceAll('/\n', ',');
         var temList = res.split(',');
+        //剔除removeme.txt
         if (temList.contains('removeme.txt')) {
           temList.remove('removeme.txt');
         }
-        var latestTag;
-        for (var i = temList.length - 1; i >= 0; i--) {
-          var temItem = temList[i];
-          var temTag = temItem.replaceAll('.', '');
-          if (AMTool.isNumber(temTag)) {
-            latestTag = temItem;
-            break;
-          }
+        //剔除空字符串
+        if (temList.contains('')) {
+          temList.remove('');
         }
-        return latestTag;
+        // 获得AMVersion的模型数组
+        var versionList = temList.map((e) => AMVersion(e)).toList();
+        // 模型大小排序
+        versionList.sort((a, b) => a.compareTo(b));
+        var resList = versionList.map((e) => e.version).toList();
+        // 获取最新的版本号
+        return resList.last;
       } else if (value is ShellException) {
         // 异常处理
         print('异常处理：${value.result?.stderr}');
@@ -155,12 +158,12 @@ class AMSVNManager {
             var item = int.tryParse(tagArr[i]);
             if (item != null) {
               //版本号解析成功，自增
-              if (9 - (item + 1) > 0) {
-                //版本号+9，可以自增
+              if (99 - (item + 1) > 0) {
+                //版本号小于99，可以自增
                 tagArr[i] = (item + 1).toString();
                 break;
               } else {
-                //版本号大于9，
+                //版本号大于99，
                 tagArr[i] = (0).toString();
               }
             } else {

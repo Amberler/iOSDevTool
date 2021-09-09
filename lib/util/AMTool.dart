@@ -1,15 +1,20 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
 import 'package:date_format/date_format.dart';
 import 'package:flowcli/util/AMConf.dart';
 import 'package:flowcli/util/AMVersion.dart';
+import 'package:http/http.dart' as http;
 import 'package:yaml/yaml.dart';
 
 /// 检测版本更新地址
-var versionURL = 'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/version.txt';
+var versionURL =
+    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/version.txt';
+
 /// 二进制更新地址
-var binaryURL = 'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli';
+var binaryURL =
+    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli';
 
 /// 工具类
 enum AMLogLevel {
@@ -58,12 +63,11 @@ class AMTool {
   static final String version = '1.0.1';
 
   // 检测更新逻辑
-  static Future<bool> checkVersion() async{
+  static Future<bool> checkVersion() async {
     try {
       var responseBody;
       var httpClient = HttpClient();
-      var request =
-          await httpClient.getUrl(Uri.parse(versionURL));
+      var request = await httpClient.getUrl(Uri.parse(versionURL));
       var response = await request.close();
       if (response.statusCode == HttpStatus.ok) {
         responseBody = await response.transform(utf8.decoder).join();
@@ -71,7 +75,7 @@ class AMTool {
         var currentVersion = AMVersion(version);
         var serverVersion = AMVersion(config['version']);
         var ret = currentVersion.compareTo(serverVersion);
-        if (ret == 1)return true;
+        if (ret == 1) return true;
         return false;
       } else {
         return false;
@@ -84,14 +88,49 @@ class AMTool {
   }
 
   // 下载程序 覆盖当前二进制
-  static Future<bool> downloadBinary() async{
-    var filePath = '${AMConf.executePath}/flowcli';
-    var httpClient = HttpClient();
-    var request =
-    await httpClient.getUrl(Uri.parse(binaryURL));
-    var response = await request.close();
-    response.con
+  static Future<bool> downloadBinary() async {
+    var filePath = '${AMConf.executePath}/flow';
+    final client = http.Client();
+    try {
+      var response = await client
+          .send(http.Request('GET', Uri.parse(binaryURL)))
+          .timeout(const Duration(seconds: 10), onTimeout: () {
+        throw TimeoutException(
+            'The connection has timed out, Please try again!');
+      });
+      var downloadFile = File(filePath);
+      var length = response.contentLength;
+      var received = 0;
+      var sink = downloadFile.openWrite();
+
+      await response.stream.map((s) {
+        received += s.length;
+        //输出下载进度
+        _drawProgressBar((received / length!), 40);
+        return s;
+      }).pipe(sink);
+
+      if (received == length) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      return false;
+    }
   }
 
-
+  static void _drawProgressBar(double amount, int size) {
+    final limit = (size * amount).toInt();
+    stdout.write(
+      '\r\x1b[38;5;75;51m' +
+          String.fromCharCodes(List.generate(size, (int index) {
+            if (index < limit) {
+              return 0x2593;
+            }
+            return 0x2591;
+          })) +
+          '\x1b[0m',
+    );
+  }
 }
