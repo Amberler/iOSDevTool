@@ -118,17 +118,36 @@ class AMSVNManager {
         if (temList.contains('removeme.txt')) {
           temList.remove('removeme.txt');
         }
+        if (temList.contains('removeme.txt\n')) {
+          temList.remove('removeme.txt\n');
+        }
         //剔除空字符串
         if (temList.contains('')) {
           temList.remove('');
         }
-        // 获得AMVersion的模型数组
-        var versionList = temList.map((e) => AMVersion(e)).toList();
-        // 模型大小排序
-        versionList.sort((a, b) => a.compareTo(b));
-        var resList = versionList.map((e) => e.version).toList();
+        //获取最后一个数据，判断当前版本号是正常的1.0.0还是带时间戳的1.0.0.20210909.1563
+        var lastStr = temList.last;
+        var lastStrList = lastStr.split('.');
+        // 0:正常3位版本号,eg:1.0.1,
+        // 1:带时间戳版本号,eg:2.2.0.0.20210903.1408
+        var type = 0;
+        var latestTag = '';
+        if (lastStrList.length >= 4) {
+          type = 1;
+        }
+        if (type == 0) {
+          //  正常版本号处理 获得AMVersion的模型数组
+          var versionList = temList.map((e) => AMVersion(e)).toList();
+          // 模型大小排序
+          versionList.sort((a, b) => a.compareTo(b));
+          var resList = versionList.map((e) => e.version).toList();
+          latestTag = resList.last;
+        } else {
+          // 带时间戳的，直接获取最后一个
+          latestTag = temList.last;
+        }
         // 获取最新的版本号
-        return resList.last;
+        return latestTag;
       } else if (value is ShellException) {
         // 异常处理
         print('异常处理：${value.result?.stderr}');
