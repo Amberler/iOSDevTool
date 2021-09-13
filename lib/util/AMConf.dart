@@ -69,7 +69,7 @@ SVN:
 Git: 
   PodspecPath: '/User/cxd/Dev/' #组件源码仓库本地路径，必须是Git克隆下的路径，不然没办法自动上传
  
-CheckVersion: true
+CheckVersion: true #自动检测更新
    ''';
     var confFile = File(localConf);
     confFile.openWrite();

@@ -58,7 +58,6 @@ class AMSVNManager {
       });
     } catch (e) {
       return Future.error(false);
-      ;
     }
   }
 
