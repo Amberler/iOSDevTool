@@ -39,5 +39,4 @@ jobs:
       # 编译二进制
       - name: Compile
         run: |
-            cd iOSDevTool
             dart compile exe  bin/flowcli.dart -o flowcliT
