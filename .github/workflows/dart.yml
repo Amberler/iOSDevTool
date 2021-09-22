@@ -33,7 +33,6 @@ jobs:
       # 拉取三方模块，分析源码，排除语法错误
       - name: Analyze Project Source
         run: |
-            cd iOSDevTool
             dart pub get
             dart analyze
 
