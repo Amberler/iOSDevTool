@@ -1,0 +1,45 @@
+# 测试Github Action 多平台编译 Dart命令行项目
+
+name: Dart
+
+# 打Tag触发
+# on:
+#   create
+
+# push触发
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: [macos-latest,ubuntu-latest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - uses: dart-lang/setup-dart@v1.2
+
+      # 安装依赖,测试环境
+      - name: Install dependencies
+        run: |
+            dart pub global activate stagehand
+            mkdir testapp
+            cd testapp
+            stagehand console-simple
+            dart pub get
+            dart run
+
+      # 拉取三方模块，分析源码，排除语法错误
+      - name: Analyze Project Source
+        run: |
+            cd iOSDevTool
+            dart pub get
+            dart analyze
+
+      # 编译二进制
+      - name: Compile
+        run: |
+            cd iOSDevTool
+            dart compile exe  bin/flowcli.dart -o flowcliT
