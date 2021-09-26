@@ -2,26 +2,29 @@
 name: Dart
 
 # 打Tag触发
-on:
-  create
+# on:
+#   create
 
 # push触发
-# on:
-#   push:
-#     branches: [ main ]
-#   pull_request:
-#     branches: [ main ]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     strategy:
       matrix:
-        os: [macos-latest, windows-latest, ubuntu-latest]
+        architecture: [arm64,x64]
 
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.2
+        with:
+            flavor: release
+            architecture: ${{ matrix.architecture }}
 
       # 安装依赖,测试环境
       - name: Install dependencies
@@ -48,6 +51,6 @@ jobs:
       # 上传成果物
       - uses: actions/upload-artifact@v1
         with:
-          name: ${{ runner.os }}_flowcli
+          name: ${{ matrix.architecture }}_flowcli
           path: ${{ github.workspace }}/package
         name: 'Upload File'
