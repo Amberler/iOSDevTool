@@ -40,10 +40,11 @@ jobs:
       - name: Compile
         run: |
             mkdir ${{ github.workspace }}/package
-            dart compile exe  bin/flowcli.dart -o ${{ github.workspace }}/package/flowcli
+            dart compile exe  bin/flowcli.dart -o ${{ github.workspace }}/package/flowcli_${{ runner.os }}
+
       # 上传成果物
       - uses: actions/upload-artifact@v1
         with:
           name: flowcli
           path: ${{ github.workspace }}/package
-        name: 'Upload Command Line'
+        name: 'Upload File'
