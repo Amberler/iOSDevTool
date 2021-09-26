@@ -14,7 +14,10 @@ on:
 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
@@ -40,11 +43,11 @@ jobs:
       - name: Compile
         run: |
             mkdir ${{ github.workspace }}/package
-            dart compile exe  bin/flowcli.dart -o ${{ github.workspace }}/package/flowcli_${{ runner.os }}
+            dart compile exe  bin/flowcli.dart -o ${{ github.workspace }}/package/flowcli
 
       # 上传成果物
       - uses: actions/upload-artifact@v1
         with:
-          name: flowcli
+          name: ${{ runner.os }}_flowcli
           path: ${{ github.workspace }}/package
         name: 'Upload File'
