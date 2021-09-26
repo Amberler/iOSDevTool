@@ -2,15 +2,15 @@
 name: Dart
 
 # 打Tag触发
-# on:
-#   create
+on:
+  create
 
 # push触发
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
+# on:
+#   push:
+#     branches: [ main ]
+#   pull_request:
+#     branches: [ main ]
 
 jobs:
   build:
