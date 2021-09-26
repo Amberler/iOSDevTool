@@ -14,17 +14,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        architecture: [arm64,x64]
+        os: [macos-latest, windows-latest, ubuntu-latest]
 
     steps:
       - uses: actions/checkout@v2
       - uses: dart-lang/setup-dart@v1.2
-        with:
-            flavor: release
-            architecture: ${{ matrix.architecture }}
 
       # 安装依赖,测试环境
       - name: Install dependencies
@@ -51,6 +48,6 @@ jobs:
       # 上传成果物
       - uses: actions/upload-artifact@v1
         with:
-          name: ${{ matrix.architecture }}_flowcli
+          name: ${{ runner.os }}_flowcli
           path: ${{ github.workspace }}/package
         name: 'Upload File'
