@@ -166,9 +166,14 @@ class AMSVNManager {
         var lastStr = tagArr.last;
         var number = AMTool.isNumber(lastStr);
         if (lastStr.length >= 4 && number == true) {
-          //时间戳版本号
-          tagArr.removeLast();
-          tagArr.last = AMTool.currentTimestamp();
+          if (lastStr.length == 4) {
+            //最后一个字符串刚好是四位，且为纯数字，那肯定是时分时间戳
+            tagArr.removeLast();
+            tagArr.last = AMTool.currentTimestamp();
+          } else {
+            //最后一个字符串大于四位，认定是年月日，仅替换最后一位即可
+            tagArr.last = AMTool.currentTimestamp();
+          }
         } else {
           //非时间戳版本号
           var versionParse = true;
