@@ -165,14 +165,24 @@ class AMSVNManager {
         var tagArr = lastTag.split('.');
         var lastStr = tagArr.last;
         var number = AMTool.isNumber(lastStr);
-        if (lastStr.length >= 4 && number == true) {
-          if (lastStr.length == 4) {
+        if (lastStr.length >= 4) {
+          if (lastStr.length == 4 && number == true) {
             //最后一个字符串刚好是四位，且为纯数字，那肯定是时分时间戳
             tagArr.removeLast();
             tagArr.last = AMTool.currentTimestamp();
-          } else {
+          } else if (lastStr.length == 8 && number == true) {
             //最后一个字符串大于四位，认定是年月日，仅替换最后一位即可
             tagArr.last = AMTool.currentTimestamp();
+          } else {
+            //版本号解析失败，用户指定
+            AMTool.log('获取到上一次提交的版本号为$lastTag,无法自动解析生成新版本号，请手动输入新的版本号:',
+                logLevel: AMLogLevel.AMLogWarn);
+            var inputTag = stdin.readLineSync();
+            if (inputTag!.isEmpty) {
+              AMTool.log('新的版本号不能为空', logLevel: AMLogLevel.AMLogError);
+              return null;
+            }
+            return inputTag;
           }
         } else {
           //非时间戳版本号

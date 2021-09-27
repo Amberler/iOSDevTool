@@ -75,7 +75,7 @@ class AMTool {
         var currentVersion = AMVersion(version);
         var serverVersion = AMVersion(config['version']);
         var ret = currentVersion.compareTo(serverVersion);
-        if (ret == 1) return {'new': true, 'version': serverVersion.version};
+        if (ret == -1) return {'new': true, 'version': serverVersion.version};
         return {'new': false, 'version': serverVersion.version};
       } else {
         return {'new': false, 'version': ''};
