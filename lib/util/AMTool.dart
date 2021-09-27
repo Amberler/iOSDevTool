@@ -60,7 +60,7 @@ class AMTool {
   }
 
   // 版本号
-  static final String version = '1.0.0';
+  static final String version = '1.0.1';
 
   // 检测更新逻辑
   static Future<Map> checkVersion() async {
