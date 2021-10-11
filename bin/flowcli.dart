@@ -39,7 +39,7 @@ void main(List<String> arguments) {
         await AMTool.checkVersion().then((map) {
           if (map['new']) {
             AMTool.log(
-                '发现新版本：${map['version']}\nhttps://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli\n下载替换当前二进制文件\n');
+                '发现新版本：${map['version']}\nhttps://cdn.jsdelivr.net/gh/Amberler/iOSDevTool@main/version/flowcli\n下载替换当前二进制文件\n');
           }
         });
       }
