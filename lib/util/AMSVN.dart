@@ -61,7 +61,7 @@ class AMSVNManager {
     }
   }
 
-  //获取指定仓库最近一次提交记录
+  //判断当前用户当天是否提交过代码
   static Future<bool> getModuleLatestLog(
       String currentDay, String moduleName) async {
     var url = AMConf.conf.svnURL + '/' + moduleName;

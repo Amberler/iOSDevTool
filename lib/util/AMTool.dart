@@ -59,8 +59,14 @@ class AMTool {
     return reg.hasMatch(str);
   }
 
+  // 验证是否为数字+.(目的为了校验输入的版本号)
+  static bool isNumberForVersion(String str) {
+    final reg = RegExp(r'^[0-9.]*$');
+    return reg.hasMatch(str);
+  }
+
   // 版本号
-  static final String version = '1.0.1';
+  static final String version = '1.0.2';
 
   // 检测更新逻辑
   static Future<Map> checkVersion() async {
