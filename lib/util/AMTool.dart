@@ -10,11 +10,11 @@ import 'package:yaml/yaml.dart';
 
 /// 检测版本更新地址
 var versionURL =
-    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/version.txt';
+    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool@main/version/version.txt';
 
 /// 二进制更新地址
 var binaryURL =
-    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool/version/flowcli';
+    'https://cdn.jsdelivr.net/gh/Amberler/iOSDevTool@main/version/flowcli';
 
 /// 工具类
 enum AMLogLevel {
