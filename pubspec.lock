@@ -79,7 +79,7 @@ packages:
     source: hosted
     version: "3.0.1"
   date_format:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: date_format
       url: "https://pub.flutter-io.cn"
@@ -107,12 +107,12 @@ packages:
     source: hosted
     version: "2.0.1"
   http:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: http
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.13.3"
+    version: "0.13.4"
   http_multi_server:
     dependency: transitive
     description:
@@ -141,6 +141,13 @@ packages:
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "0.6.3"
+  lints:
+    dependency: "direct dev"
+    description:
+      name: lints
+      url: "https://pub.flutter-io.cn"
+    source: hosted
+    version: "1.0.1"
   logging:
     dependency: transitive
     description:
@@ -191,7 +198,7 @@ packages:
     source: hosted
     version: "1.8.0"
   pedantic:
-    dependency: "direct dev"
+    dependency: transitive
     description:
       name: pedantic
       url: "https://pub.flutter-io.cn"
@@ -205,12 +212,12 @@ packages:
     source: hosted
     version: "1.5.0"
   process_run:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: process_run
       url: "https://pub.flutter-io.cn"
     source: hosted
-    version: "0.12.1+1"
+    version: "0.12.2+2"
   pub_semver:
     dependency: transitive
     description:
@@ -359,11 +366,11 @@ packages:
     source: hosted
     version: "1.0.0"
   yaml:
-    dependency: "direct dev"
+    dependency: "direct main"
     description:
       name: yaml
       url: "https://pub.flutter-io.cn"
     source: hosted
     version: "3.1.0"
 sdks:
-  dart: ">=2.12.0 <3.0.0"
+  dart: ">=2.14.0 <3.0.0"
